@@ -1,0 +1,37 @@
+// trojan_detector.v
+module trojan_detector (
+    input wire clk,
+    input wire rst,
+    input wire mem_valid,
+    output reg alert_detected
+);
+
+    reg [2:0] state;
+    reg [3:0] high_counter;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= 0;
+            high_counter <= 0;
+            alert_detected <= 0;
+        end else begin
+            case (state)
+                0: begin // Normal monitoring
+                    alert_detected <= 0;
+                    if (mem_valid)
+                        high_counter <= high_counter + 1;
+                    else
+                        high_counter <= 0;
+
+                    if (high_counter > 4) // 5 cycles high
+                        state <= 1;
+                end
+
+                1: begin // Alert state
+                    alert_detected <= 1;
+                end
+
+            endcase
+        end
+    end
+endmodule
